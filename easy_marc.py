@@ -191,10 +191,16 @@ def _apply_formats(field_value: dict, formats: list[dict]) -> str:
         # Controlla che tutti i sottocampi richiesti siano presenti
         if all(sf in subfields for sf in required):
             template = fmt.get("format", "")
-            # Sostituisce {x} con il primo valore del sottocampo x
+            # Sostituisce {x} con il valore del sottocampo x.
+            # Se il sottocampo è in "join", tutti i valori ripetuti vengono
+            # uniti con il separatore indicato; altrimenti si usa solo il primo.
+            join_seps = fmt.get("join", {})
             result = template
             for sf in required:
-                val = subfields[sf][0] if subfields[sf] else ""
+                if sf in join_seps and subfields[sf]:
+                    val = join_seps[sf].join(subfields[sf])
+                else:
+                    val = subfields[sf][0] if subfields[sf] else ""
                 result = result.replace("{" + sf + "}", val)
             # Slice opzionale sul risultato finale (es. per estrarre anni da 100$a)
             slc = fmt.get("slice")

@@ -15,21 +15,20 @@
     {
       "tag": "950",
       "label": "managementId",
-      "filter": { "subfield": "3", "value": "ABR0ME" },
       "formats": [
         { "subfields": ["e"], "format": "{e}", "slice": [0, 14] }
       ],
       "separator": " | "
     },
     {
-      "constant": "IT-PG035",
+      "constant": "IT-PG0035",
       "label": "conservativeId"
     },
     {
       "tag": "200",
       "label": "Titolo",
       "formats": [
-        { "subfields": ["a", "e"], "format": "{a} : {e}" },
+        { "subfields": ["a", "e"], "format": "{a} : {e}", "join": {"a": " ; ", "e": " : "} },
         { "subfields": ["a"],      "format": "{a}" }
       ]
     },
@@ -99,7 +98,7 @@
       "tag": "200",
       "label": "title",
       "formats": [
-        { "subfields": ["a", "e"], "format": "{a} : {e}" },
+        { "subfields": ["a", "e"], "format": "{a} : {e}", "join": {"e": " : "} },
         { "subfields": ["a"],      "format": "{a}" }
       ]
     },
