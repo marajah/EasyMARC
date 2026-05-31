@@ -1,0 +1,187 @@
+{
+  "columns": [
+    {
+      "tag": "001",
+      "label": "logicalId"
+    },
+    {
+      "tag": "957",
+      "label": "Collocazioni",
+      "formats": [
+        { "subfields": ["3", "c", "d"], "format": "{3}-{c}-{d}" },
+        { "subfields": ["3", "d"],      "format": "{3}-{d}" },
+        { "subfields": ["3"],           "format": "{3}" }
+      ],
+      "separator": " | "
+    },
+    {
+      "tag": "957",
+      "label": "managementId",
+      "filter": { "subfield": "3", "value": "ABR0ME" },
+      "formats": [
+        { "subfields": ["3", "c", "d"], "format": "{3}-{c}-{d}" },
+        { "subfields": ["3", "d"],      "format": "{3}-{d}" },
+        { "subfields": ["3"],           "format": "{3}" }
+      ],
+      "separator": " | "
+    },
+    {
+      "constant": "IT-CH0020",
+      "label": "conservativeId"
+    },
+    {
+      "tag": "200",
+      "label": "Titolo",
+      "formats": [
+        { "subfields": ["a", "e"], "format": "{a} : {e}" },
+        { "subfields": ["a"],      "format": "{a}" }
+      ]
+    },
+    {
+      "tag": "210",
+      "label": "Luogo",
+      "formats": [
+        { "subfields": ["a"],           "format": "{a}" }
+      ]
+    },
+    {
+      "tag": "210",
+      "label": "Editore",
+      "formats": [
+        { "subfields": ["c"],           "format": "{c}" }
+      ]
+    },
+    {
+      "tag": "101",
+      "label": "Lingua",
+      "formats": [
+        { "subfields": ["a"], "format": "{a}" }
+      ]
+    },
+    {
+      "tag": "102",
+      "label": "Paese",
+      "formats": [
+        { "subfields": ["a"], "format": "{a}" }
+      ]
+    },
+    {
+      "tag": "110",
+      "label": "Tipo",
+      "formats": [
+        { "subfields": ["a"], "format": "{a}" }
+      ]
+    },
+    {
+      "source": "leader",
+      "offset": 6,
+      "label": "typeOfResource",
+      "map": {
+        "a": "TESTO A STAMPA",
+        "b": "TESTO MANOSCRITTO",
+        "c": "MUSICA NOTATA A STAMPA",
+        "d": "MUSICA NOTATA MANOSCRITTA",
+        "e": "MATERIALE CARTOGRAFICO A STAMPA",
+        "f": "MATERIALE CARTOGRAFICO MANOSCRITTO",
+        "g": "PROIEZIONI",
+        "i": "MUSICA ESEGUITA",
+        "j": "MUSICA ESEGUITA (MUSICALE)",
+        "k": "MATERIALE GRAFICO",
+        "l": "RISORSA ELETTRONICA",
+        "m": "MULTIMEDIA",
+        "r": "MATERIALE TRIDIMENSIONALE"
+      }
+    },
+    {
+      "tag": "200",
+      "label": "title",
+      "formats": [
+        { "subfields": ["a", "e"], "format": "{a} : {e}" },
+        { "subfields": ["a"],      "format": "{a}" }
+      ]
+    },
+    {
+      "tag": "100",
+      "label": "dateIssued_start",
+      "formats": [
+        { "subfields": ["a"], "format": "{a}", "slice": [9, 13] }
+      ]
+    },
+    {
+      "tag": "100",
+      "label": "dateIssued_end",
+      "formats": [
+        { "subfields": ["a"], "format": "{a}", "slice": [13, 17] }
+      ]
+    },
+    {
+      "constant": "n.d.",
+      "label": "form"
+    },
+    {
+      "tag": "215",
+      "label": "extent",
+      "formats": [
+        { "subfields": ["a", "c", "d"], "format": "{a} : {c} ; {d}" },
+        { "subfields": ["a", "c"],      "format": "{a} : {c}" },
+        { "subfields": ["a", "d"],      "format": "{a} ; {d}" },
+        { "subfields": ["a"],           "format": "{a}" }
+      ]
+    },
+    {
+      "tag": "610",
+      "label": "Soggetto",
+      "formats": [
+        { "subfields": ["a"], "format": "{a}" }
+      ],
+      "separator": " | "
+    },
+    {
+      "tag": "700",
+      "label": "Autore principale",
+      "formats": [
+        { "subfields": ["a", "b"], "format": "{a}, {b}" },
+        { "subfields": ["a"],      "format": "{a}" }
+      ],
+      "separator": " | "
+    },
+    {
+      "tag": "702",
+      "label": "Altro responsabile",
+      "formats": [
+        { "subfields": ["a", "b"], "format": "{a}, {b}" },
+        { "subfields": ["a"],      "format": "{a}" }
+      ],
+      "separator": " | "
+    },
+    {
+      "tag": "801",
+      "label": "Origine catalogazione",
+      "formats": [
+        { "subfields": ["a", "b", "c"], "format": "{a}/{b} ({c})" },
+        { "subfields": ["a", "b"],      "format": "{a}/{b}" }
+      ],
+      "separator": " | "
+    },
+    {
+      "tag": "852",
+      "label": "Collocazione",
+      "formats": [
+        { "subfields": ["a", "j"], "format": "{a} - {j}" },
+        { "subfields": ["a"],      "format": "{a}" },
+        { "subfields": ["j"],      "format": "{j}" }
+      ],
+      "separator": " | "
+    },
+    {
+      "tag": "957",
+      "label": "Esemplare (istituto-segnatura-inventario)",
+      "formats": [
+        { "subfields": ["3", "c", "d"], "format": "{3}-{c}-{d}" },
+        { "subfields": ["3", "d"],      "format": "{3}-{d}" },
+        { "subfields": ["3"],           "format": "{3}" }
+      ],
+      "separator": " | "
+    }
+  ]
+}
