@@ -137,6 +137,7 @@ Ogni oggetto nella lista `columns` puo avere queste proprieta:
 | `tag` | Condizionale | — | Codice tag UNIMARC/MARC21 (es. `"001"`, `"200"`). Obbligatorio per colonne da tag; assente per `constant` e `source` |
 | `formats` | No | Concatenazione automatica | Lista ordinata di formati da provare (vedi sotto) |
 | `separator` | No | `" \| "` | Separatore tra piu occorrenze dello stesso tag |
+| `join` | No | — | Dentro un formato: unisce i valori ripetuti di un sottocampo con il separatore indicato (vedi sotto) |
 | `filter` | No | — | Filtra le occorrenze del tag per valore di un sottocampo (vedi sotto) |
 | `constant` | — | — | Inserisce un valore fisso, uguale per tutti i record. Alternativo a `tag` |
 | `source` | — | — | `"leader"`: legge un carattere dal Leader del record. Usare insieme a `offset` e `map` |
@@ -164,6 +165,27 @@ Per un record con solo `$a Introduzione alla logica`:
 Se nessun formato corrisponde, la cella rimane vuota.
 
 > **Nota:** I tag `001`–`009` sono campi di controllo (senza indicatori ne sottocampi): il loro valore viene estratto direttamente, indipendentemente da `formats`.
+
+#### Join di sottocampi ripetuti
+
+Per default, se un sottocampo compare più volte nello stesso campo (es. più `$e` nel tag 200), viene usato solo il primo valore. Aggiungendo `"join"` al formato è possibile raccogliere **tutti** i valori e unirli con un separatore personalizzato.
+
+```json
+{
+  "tag": "200",
+  "label": "Titolo",
+  "formats": [
+    { "subfields": ["a", "e"], "format": "{a} : {e}", "join": {"e": " : "} },
+    { "subfields": ["a"],      "format": "{a}" }
+  ]
+}
+```
+
+`"join": {"e": " : "}` significa: unisci tutte le occorrenze di `$e` con il separatore ` : ` invece di usarne solo una.
+
+Esempio: `$a Storia dell'arte $e Pittura : Scultura`:
+- Senza `join`: `Storia dell'arte : Pittura`
+- Con `join: {"e": " : "}`: `Storia dell'arte : Pittura : Scultura`
 
 #### Slicing (sottostringa)
 
@@ -227,6 +249,17 @@ Se un tag compare piu volte nello stesso record (es. piu autori in tag `700`), i
 ```
 Rossi, Mario | Verdi, Anna | Bianchi, Luigi
 ```
+
+### File di configurazione inclusi
+
+Il repository include due file di configurazione pronti all'uso:
+
+| File | Cliente / Uso |
+|------|--------------|
+| `config-EasyCat-Chieti-periodici.json` | EasyCat, Chieti — periodici. Usa tag `957` con `filter` per biblioteca `ABR0ME`, `conservativeId = IT-CH0020` |
+| `config-SBNcloud-Foligno-Loreti.json` | SBNcloud, Foligno — biblioteca Loreti. Usa tag `950` per collocazioni, `conservativeId = IT-PG0035`, `join` su `$e` e `$a` del tag 200 |
+
+---
 
 ### Configurazione di default (SBN/UNIMARC)
 
