@@ -16,7 +16,7 @@
       "tag": "950",
       "label": "managementId",
       "formats": [
-        { "subfields": ["e"], "format": "{e}", "slice": [0, 14] }
+        { "subfields": ["e"], "format": "{e}", "slice": [0, 15] }
       ],
       "separator": " | "
     },
