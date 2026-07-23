@@ -1,8 +1,11 @@
 {
   "columns": [
     {
-      "tag": "001",
-      "label": "logicalId"
+      "tag": "017",
+      "label": "logicalId",
+      "formats": [
+        { "subfields": ["a"],           "format": "{a}" }
+      ]
     },
     {
       "tag": "950",
