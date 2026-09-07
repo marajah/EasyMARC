@@ -58,36 +58,41 @@ pip install -r requirements.txt
 ./run.sh <file.iso> [--config config.json] [--output risultato.xlsx]
 ```
 
-| Argomento | Obbligatorio | Default | Descrizione |
-|-----------|:---:|---------|-------------|
-| `file.iso` | Si | — | File UNIMARC/MARC21 in formato ISO 2709 |
-| `--config` | No | `config.json` (stessa cartella dello script) | File JSON con la lista dei campi da estrarre |
-| `--output` | No | Stessa cartella del `.iso`, stessa nome con estensione `.xlsx` | Percorso del file Excel di output |
+| Argomento    | Obbligatorio | Default                                                           | Descrizione                                  |
+| ------------ | :----------: | ----------------------------------------------------------------- | -------------------------------------------- |
+| `file.iso` |      Si      | —                                                                | File UNIMARC/MARC21 in formato ISO 2709      |
+| `--config` |      No      | `config.json` (stessa cartella dello script)                    | File JSON con la lista dei campi da estrarre |
+| `--output` |      No      | Stessa cartella del`.iso`, stessa nome con estensione `.xlsx` | Percorso del file Excel di output            |
 
 ### Esempi
 
 **1. Uso base — config e output predefiniti**
+
 ```bash
 ./run.sh /dati/catalogo.iso
 # Genera: /dati/catalogo.xlsx
 ```
 
 **2. Output in una cartella diversa**
+
 ```bash
 ./run.sh /dati/catalogo.iso --output /export/catalogo_2026.xlsx
 ```
 
 **3. Configurazione personalizzata**
+
 ```bash
 ./run.sh /dati/catalogo.iso --config config_soggetti.json
 ```
 
 **4. Tutti gli argomenti espliciti**
+
 ```bash
 ./run.sh /dati/catalogo.iso --config config_custom.json --output /export/out.xlsx
 ```
 
 **5. Su Windows**
+
 ```bat
 run.bat "C:\dati\catalogo.iso" --output "C:\export\catalogo.xlsx"
 ```
@@ -131,18 +136,18 @@ Il file `config.json` descrive le colonne da estrarre nell'Excel. Ha un'unica ch
 
 Ogni oggetto nella lista `columns` puo avere queste proprieta:
 
-| Campo | Obbligatorio | Default | Descrizione |
-|-------|:---:|---------|-------------|
-| `label` | Si | — | Intestazione della colonna nell'Excel |
-| `tag` | Condizionale | — | Codice tag UNIMARC/MARC21 (es. `"001"`, `"200"`). Obbligatorio per colonne da tag; assente per `constant` e `source` |
-| `formats` | No | Concatenazione automatica | Lista ordinata di formati da provare (vedi sotto) |
-| `separator` | No | `" \| "` | Separatore tra piu occorrenze dello stesso tag |
-| `join` | No | — | Dentro un formato: unisce i valori ripetuti di un sottocampo con il separatore indicato (vedi sotto) |
-| `filter` | No | — | Filtra le occorrenze del tag per valore di un sottocampo (vedi sotto) |
-| `constant` | — | — | Inserisce un valore fisso, uguale per tutti i record. Alternativo a `tag` |
-| `source` | — | — | `"leader"`: legge un carattere dal Leader del record. Usare insieme a `offset` e `map` |
-| `offset` | No | — | Posizione (0-based) nel Leader da leggere. Usato solo con `"source": "leader"` |
-| `map` | No | — | Dizionario di decodifica per il valore letto dal Leader (es. `"a"` → `"TESTO A STAMPA"`) |
+| Campo         | Obbligatorio | Default                   | Descrizione                                                                                                                 |
+| ------------- | :----------: | ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `label`     |      Si      | —                        | Intestazione della colonna nell'Excel                                                                                       |
+| `tag`       | Condizionale | —                        | Codice tag UNIMARC/MARC21 (es.`"001"`, `"200"`). Obbligatorio per colonne da tag; assente per `constant` e `source` |
+| `formats`   |      No      | Concatenazione automatica | Lista ordinata di formati da provare (vedi sotto)                                                                           |
+| `separator` |      No      | `"                        | "`                                                                                                                          |
+| `join`      |      No      | —                        | Dentro un formato: unisce i valori ripetuti di un sottocampo con il separatore indicato (vedi sotto)                        |
+| `filter`    |      No      | —                        | Filtra le occorrenze del tag per valore di un sottocampo (vedi sotto)                                                       |
+| `constant`  |      —      | —                        | Inserisce un valore fisso, uguale per tutti i record. Alternativo a`tag`                                                  |
+| `source`    |      —      | —                        | `"leader"`: legge un carattere dal Leader del record. Usare insieme a `offset` e `map`                                |
+| `offset`    |      No      | —                        | Posizione (0-based) nel Leader da leggere. Usato solo con`"source": "leader"`                                             |
+| `map`       |      No      | —                        | Dizionario di decodifica per il valore letto dal Leader (es.`"a"` → `"TESTO A STAMPA"`)                                |
 
 ### Formati condizionali
 
@@ -156,15 +161,15 @@ Ogni elemento di `formats` definisce un template da usare **solo se tutti i sott
 ```
 
 Per un record con `$a Fondamenti di Python $e Guida pratica`:
+
 - Il primo formato corrisponde → output: `Fondamenti di Python : Guida pratica`
 
 Per un record con solo `$a Introduzione alla logica`:
+
 - Il primo formato non corrisponde (manca `$e`)
 - Il secondo corrisponde → output: `Introduzione alla logica`
 
 Se nessun formato corrisponde, la cella rimane vuota.
-
-> **Nota:** I tag `001`–`009` sono campi di controllo (senza indicatori ne sottocampi): il loro valore viene estratto direttamente, indipendentemente da `formats`.
 
 #### Join di sottocampi ripetuti
 
@@ -181,9 +186,10 @@ Per default, se un sottocampo compare più volte nello stesso campo (es. più `$
 }
 ```
 
-`"join": {"e": " : "}` significa: unisci tutte le occorrenze di `$e` con il separatore ` : ` invece di usarne solo una.
+`"join": {"e": " : "}` significa: unisci tutte le occorrenze di `$e` con il separatore `:` invece di usarne solo una.
 
 Esempio: `$a Storia dell'arte $e Pittura : Scultura`:
+
 - Senza `join`: `Storia dell'arte : Pittura`
 - Con `join: {"e": " : "}`: `Storia dell'arte : Pittura : Scultura`
 
@@ -196,6 +202,28 @@ Aggiungendo `"slice": [inizio, fine]` a un formato, il risultato viene tagliato 
 ```
 
 Esempio: `$a 1984    19840000` → slice [9,13] → `1984`
+
+### Campi di controllo (001–009) — nessun sottocampo da estrarre
+
+I tag da `001` a `009` sono **campi di controllo**: a differenza dei campi dati, non hanno né indicatori né sottocampi. Il loro contenuto è una stringa singola, non una struttura `$a … $b …`.
+
+Di conseguenza `formats` non serve e viene comunque **ignorato**: il valore del campo viene copiato direttamente nella cella. La colonna si configura quindi con il solo `tag` e la `label`:
+
+```json
+{ "tag": "001", "label": "logicalId" }
+```
+
+Per un record il cui campo `001` contiene `CFI0345620`, la cella conterrà `CFI0345620`.
+
+> **Attenzione:** scrivere `"formats": [{ "format": "{a}" }]` su un campo di controllo non produce errore, ma è codice morto: il segnaposto `{a}` non viene mai sostituito perché il sottocampo `$a` non esiste. Meglio ometterlo del tutto, per non far credere a chi legge la configurazione che ci sia una logica di sottocampi.
+
+#### Se il tag non esiste nel file
+
+Se un tag configurato **non è presente in nessun record** del file `.iso`, la colonna risulta vuota e **non viene segnalato nessun errore**: EasyMARC non sa distinguere «tag assente dal file» da «tag presente ma vuoto».
+
+Caso reale: una configurazione che cerca l'identificativo nel tag `017` applicata a un file in cui l'identificativo sta nel tag `001` produce una colonna `logicalId` interamente vuota, senza alcun avviso.
+
+Quando una colonna risulta inaspettatamente vuota, il primo controllo da fare è quindi **verificare quali tag contiene davvero il file**, e assicurarsi di aver passato a `--config` la configurazione giusta per quel fornitore/biblioteca (le esportazioni SBNcloud, Sebina ed EasyCat non usano sempre gli stessi tag).
 
 ### Filtro occorrenze (`filter`)
 
@@ -254,10 +282,10 @@ Rossi, Mario | Verdi, Anna | Bianchi, Luigi
 
 Il repository include due file di configurazione pronti all'uso:
 
-| File | Cliente / Uso |
-|------|--------------|
-| `config-EasyCat-Chieti-periodici.json` | EasyCat, Chieti — periodici. Usa tag `957` con `filter` per biblioteca `ABR0ME`, `conservativeId = IT-CH0020` |
-| `config-SBNcloud-Foligno-Loreti.json` | SBNcloud, Foligno — biblioteca Loreti. Usa tag `950` per collocazioni, `conservativeId = IT-PG0035`, `join` su `$e` e `$a` del tag 200 |
+| File                                     | Cliente / Uso                                                                                                                                    |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `config-EasyCat-Chieti-periodici.json` | EasyCat, Chieti — periodici. Usa tag`957` con `filter` per biblioteca `ABR0ME`, `conservativeId = IT-CH0020`                            |
+| `config-SBNcloud-Foligno-Loreti.json`  | SBNcloud, Foligno — biblioteca Loreti. Usa tag`950` per collocazioni, `conservativeId = IT-PG0035`, `join` su `$e` e `$a` del tag 200 |
 
 ---
 
@@ -265,29 +293,29 @@ Il repository include due file di configurazione pronti all'uso:
 
 Il file `config.json` fornito e precompilato per cataloghi SBN. Contiene 21 colonne:
 
-| # | Label | Sorgente | Formato / Note |
-|---|-------|----------|----------------|
-| 1 | logicalId | Tag 001 | Identificativo SBN (valore diretto) |
-| 2 | Collocazioni | Tag 957 | `{3}-{c}-{d}` con fallback — tutte le biblioteche (ripetibile) |
-| 3 | managementId | Tag 957 | `{3}-{c}-{d}` — solo biblioteca con `$3 = ABR0ME` |
-| 4 | conservativeId | Costante | `IT-CH0020` su ogni riga |
-| 5 | Titolo | Tag 200 | `{a} : {e}` oppure `{a}` |
-| 6 | Luogo | Tag 210 | `{a}` |
-| 7 | Editore | Tag 210 | `{c}` |
-| 8 | Lingua | Tag 101 | `{a}` |
-| 9 | Paese | Tag 102 | `{a}` |
-| 10 | Tipo | Tag 110 | `{a}` |
-| 11 | typeOfResource | Leader pos. 6 | Decodificato con mappa (es. `a` → `TESTO A STAMPA`) |
-| 12 | title | Tag 200 | `{a} : {e}` oppure `{a}` |
-| 13 | dateIssued_start | Tag 100 | `$a` slice [9:13] — anno di inizio |
-| 14 | dateIssued_end | Tag 100 | `$a` slice [13:17] — anno di fine |
-| 15 | form | Costante | `n.d.` su ogni riga |
-| 16 | extent | Tag 215 | `{a} : {c} ; {d}` con fallback |
-| 17 | Soggetto | Tag 610 | `{a}` (ripetibile con ` \| `) |
-| 18 | Autore principale | Tag 700 | `{a}, {b}` oppure `{a}` (ripetibile) |
-| 19 | Altro responsabile | Tag 702 | `{a}, {b}` oppure `{a}` (ripetibile) |
-| 20 | Origine catalogazione | Tag 801 | `{a}/{b} ({c})` (ripetibile) |
-| 21 | Collocazione | Tag 852 | `{a} - {j}` con fallback (ripetibile) |
+| #  | Label                 | Sorgente      | Formato / Note                                                    |
+| -- | --------------------- | ------------- | ----------------------------------------------------------------- |
+| 1  | logicalId             | Tag 001       | Identificativo SBN (valore diretto)                               |
+| 2  | Collocazioni          | Tag 957       | `{3}-{c}-{d}` con fallback — tutte le biblioteche (ripetibile) |
+| 3  | managementId          | Tag 957       | `{3}-{c}-{d}` — solo biblioteca con `$3 = ABR0ME`            |
+| 4  | conservativeId        | Costante      | `IT-CH0020` su ogni riga                                        |
+| 5  | Titolo                | Tag 200       | `{a} : {e}` oppure `{a}`                                      |
+| 6  | Luogo                 | Tag 210       | `{a}`                                                           |
+| 7  | Editore               | Tag 210       | `{c}`                                                           |
+| 8  | Lingua                | Tag 101       | `{a}`                                                           |
+| 9  | Paese                 | Tag 102       | `{a}`                                                           |
+| 10 | Tipo                  | Tag 110       | `{a}`                                                           |
+| 11 | typeOfResource        | Leader pos. 6 | Decodificato con mappa (es.`a` → `TESTO A STAMPA`)           |
+| 12 | title                 | Tag 200       | `{a} : {e}` oppure `{a}`                                      |
+| 13 | dateIssued_start      | Tag 100       | `$a` slice [9:13] — anno di inizio                             |
+| 14 | dateIssued_end        | Tag 100       | `$a` slice [13:17] — anno di fine                              |
+| 15 | form                  | Costante      | `n.d.` su ogni riga                                             |
+| 16 | extent                | Tag 215       | `{a} : {c} ; {d}` con fallback                                  |
+| 17 | Soggetto              | Tag 610       | `{a}` (ripetibile con `                                         |
+| 18 | Autore principale     | Tag 700       | `{a}, {b}` oppure `{a}` (ripetibile)                          |
+| 19 | Altro responsabile    | Tag 702       | `{a}, {b}` oppure `{a}` (ripetibile)                          |
+| 20 | Origine catalogazione | Tag 801       | `{a}/{b} ({c})` (ripetibile)                                    |
+| 21 | Collocazione          | Tag 852       | `{a} - {j}` con fallback (ripetibile)                           |
 
 ---
 
@@ -307,6 +335,7 @@ Il file Excel generato contiene un unico foglio denominato **UNIMARC**.
 ISO 2709 e lo standard internazionale (ISO/IEC 2709) per lo scambio di record bibliografici. E il formato di trasporto usato da tutti i principali sistemi bibliotecari (SBN, OPAC, ILS) per esportare e importare cataloghi.
 
 Ogni file `.iso` contiene una sequenza di record. Ogni record e strutturato in tre parti:
+
 - **Leader** (24 byte): metadati sul record (lunghezza, tipo, posizione dei dati)
 - **Directory**: indice dei campi presenti (tag, lunghezza, posizione)
 - **Campi dati**: valori veri e propri, con indicatori e sottocampi separati da caratteri di controllo
@@ -326,12 +355,12 @@ logs/
 
 I messaggi di errore piu comuni:
 
-| Messaggio | Causa |
-|-----------|-------|
-| `File non trovato: <file.iso>` | Il percorso del file ISO e errato |
-| `File di configurazione non trovato: <config>` | Il `config.json` non esiste nel percorso indicato |
-| `Errore nel file di configurazione: ...` | Il JSON non e valido o manca la chiave `columns` |
-| `Record troppo corto, saltato` | Record corrotto nel file ISO (warning, elaborazione continua) |
+| Messaggio                                        | Causa                                                         |
+| ------------------------------------------------ | ------------------------------------------------------------- |
+| `File non trovato: <file.iso>`                 | Il percorso del file ISO e errato                             |
+| `File di configurazione non trovato: <config>` | Il`config.json` non esiste nel percorso indicato            |
+| `Errore nel file di configurazione: ...`       | Il JSON non e valido o manca la chiave`columns`             |
+| `Record troppo corto, saltato`                 | Record corrotto nel file ISO (warning, elaborazione continua) |
 
 ---
 
