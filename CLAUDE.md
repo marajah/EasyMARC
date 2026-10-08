@@ -82,11 +82,29 @@ Ogni formato in `formats` ha:
 - `join` *(opzionale)*: per sottocampi ripetuti, unisce tutti i valori col separatore indicato invece di usare solo il primo. Es. `{"e": " : "}` → tutti i `$e` uniti da ` : `
 - `slice` *(opzionale)*: `[inizio, fine]` sulla stringa risultante (es. anno da campo 100)
 
+### Fogli aggiuntivi (`sheets`, opzionale)
+
+Chiave top-level accanto a `columns`. Ogni voce crea un foglio con **una riga per ogni occorrenza** di `tag$subfield` (es. tutti i `950$e` di un periodico). Se la chiave manca, l'output è identico a prima (solo foglio `UNIMARC`).
+
+| Chiave | Default | Descrizione |
+|--------|---------|-------------|
+| `name` | `<tag><subfield>` | Nome del foglio (max 31 caratteri) |
+| `tag`, `subfield` | — (obbligatori) | Sottocampo da espandere |
+| `id_tag` | `"001"` | Campo di controllo usato come id del record |
+| `year_regex` | `(\\d{4})\\s*$` | Regex sul valore; il gruppo 1 è l'anno |
+| `combo_separator` | `"_"` | Separatore tra id e anno |
+| `pad_to` | — | Completa il valore con spazi finali fino a N caratteri (mai troncato; warning se più lungo) |
+| `filter` | — | Come nelle colonne: `{"subfield": "3", "value": "..."}` |
+| `labels` | `logicalId` / `managementId` / `logicalId_year` | Intestazioni (`id`, `value`, `combo`) |
+
+Colonne: id del record, valore con spazi compressi (`SV 33 5 1927`), `id_anno` (`CFI0350986_1927`). Se l'anno non si trova, la cella combo resta vuota e viene loggato un warning.
+
 ## File di configurazione presenti
 
 | File | Cliente / Uso |
 |------|--------------|
 | `config-EasyCat-Chieti-periodici.json` | EasyCat, Chieti — periodici. Usa tag `957` con `filter` per biblioteca `ABR0ME`, `conservativeId = IT-CH0020` |
+| `config-SBNcloud-Savona-Letimbro.json` | SBNcloud, Savona — Biblioteca Barrili (periodici). Copia della config Imperia + foglio `managementId` da `950$e` |
 | `config-SBNcloud-Foligno-Loreti.json` | SBNcloud, Foligno — biblioteca Loreti. Usa tag `950` per collocazioni, `conservativeId = IT-PG0035`, `join` su sottocampi `$e` e `$a` del 200 |
 
 ## Cronologia modifiche rilevanti

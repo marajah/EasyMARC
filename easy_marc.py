@@ -272,6 +272,65 @@ def apply_column(record: dict, col_spec: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Fogli aggiuntivi: una riga per ogni occorrenza di un sottocampo
+# ---------------------------------------------------------------------------
+
+_SPACES_RE = re.compile(r"\s+")
+DEFAULT_YEAR_REGEX = r"(\d{4})\s*$"
+
+
+def _passes_filter(field_value, flt) -> bool:
+    """Stessa logica del 'filter' delle colonne: sottocampo == valore."""
+    if not flt or not isinstance(field_value, dict):
+        return True
+    return flt.get("value", "") in field_value.get("subfields", {}).get(flt.get("subfield", ""), [])
+
+
+def extract_sheet_rows(records: list[dict], spec: dict) -> list[list[str]]:
+    """
+    Per ogni record e ogni occorrenza di tag$subfield produce una riga:
+      [id, valore (spazi compressi), id + combo_separator + anno]
+    L'anno è il gruppo 1 di 'year_regex' applicato al valore; se assente,
+    la cella combo resta vuota e viene registrato un warning.
+    Con 'pad_to' il valore viene completato con spazi finali fino a quella
+    lunghezza (mai troncato).
+    """
+    tag = spec["tag"]
+    subfield = spec["subfield"]
+    id_tag = spec.get("id_tag", "001")
+    year_re = re.compile(spec.get("year_regex", DEFAULT_YEAR_REGEX))
+    combo_sep = spec.get("combo_separator", "_")
+    flt = spec.get("filter")
+    pad_to = spec.get("pad_to")
+
+    rows = []
+    for record in records:
+        ids = record.get(id_tag, [])
+        rec_id = ids[0] if ids and isinstance(ids[0], str) else ""
+        for field_value in record.get(tag, []):
+            if not isinstance(field_value, dict) or not _passes_filter(field_value, flt):
+                continue
+            for raw in field_value.get("subfields", {}).get(subfield, []):
+                value = _SPACES_RE.sub(" ", raw).strip()
+                if not value:
+                    continue
+                m = year_re.search(value)
+                if pad_to:
+                    if len(value) > pad_to:
+                        logging.warning(f"[{spec.get('name', tag)}] '{value}' supera {pad_to} caratteri "
+                                        f"(record {rec_id}), lasciato intero")
+                    value = value.ljust(pad_to)
+                if m:
+                    combo = f"{rec_id}{combo_sep}{m.group(1)}"
+                else:
+                    combo = ""
+                    logging.warning(f"[{spec.get('name', tag)}] Anno non trovato in {tag}${subfield} "
+                                    f"'{value}' (record {rec_id})")
+                rows.append([rec_id, value, combo])
+    return rows
+
+
+# ---------------------------------------------------------------------------
 # Scrittura Excel
 # ---------------------------------------------------------------------------
 
@@ -280,15 +339,11 @@ HEADER_FONT = Font(bold=True, color="FFFFFF", name="Calibri", size=11)
 DATA_FONT = Font(name="Calibri", size=10)
 
 
-def write_excel(records: list[dict], columns: list[dict], output_path: Path):
-    """Scrive il file Excel con header e dati."""
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "UNIMARC"
-
+def _fill_sheet(ws, headers: list[str], rows: list[list[str]]):
+    """Scrive header e righe in un foglio con lo stile comune."""
     # Header
-    for col_idx, col_spec in enumerate(columns, start=1):
-        cell = ws.cell(row=1, column=col_idx, value=col_spec.get("label", col_spec.get("tag", "")))
+    for col_idx, label in enumerate(headers, start=1):
+        cell = ws.cell(row=1, column=col_idx, value=label)
         cell.font = HEADER_FONT
         cell.fill = HEADER_FILL
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=False)
@@ -296,26 +351,47 @@ def write_excel(records: list[dict], columns: list[dict], output_path: Path):
     ws.row_dimensions[1].height = 18
 
     # Dati
-    for row_idx, record in enumerate(records, start=2):
-        for col_idx, col_spec in enumerate(columns, start=1):
-            value = apply_column(record, col_spec)
+    for row_idx, row in enumerate(rows, start=2):
+        for col_idx, value in enumerate(row, start=1):
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
             cell.font = DATA_FONT
             cell.alignment = Alignment(vertical="top", wrap_text=False)
 
     # Auto-larghezza colonne (stima)
-    for col_idx, col_spec in enumerate(columns, start=1):
-        label = col_spec.get("label", col_spec.get("tag", ""))
+    for col_idx, label in enumerate(headers, start=1):
         max_len = len(label)
-        for row_idx in range(2, len(records) + 2):
-            val = ws.cell(row=row_idx, column=col_idx).value or ""
-            max_len = max(max_len, len(str(val)))
+        for row in rows:
+            max_len = max(max_len, len(str(row[col_idx - 1] or "")))
         # Limita a 60 caratteri
         adjusted = min(max_len + 2, 62)
         ws.column_dimensions[get_column_letter(col_idx)].width = adjusted
 
     # Freeze header
     ws.freeze_panes = "A2"
+
+
+def write_excel(records: list[dict], columns: list[dict], output_path: Path, sheets: list[dict] = None):
+    """Scrive il file Excel con header e dati, più eventuali fogli aggiuntivi."""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "UNIMARC"
+
+    headers = [col_spec.get("label", col_spec.get("tag", "")) for col_spec in columns]
+    rows = [[apply_column(record, col_spec) for col_spec in columns] for record in records]
+    _fill_sheet(ws, headers, rows)
+
+    for spec in sheets or []:
+        labels = spec.get("labels", {})
+        sheet_headers = [
+            labels.get("id", "logicalId"),
+            labels.get("value", "managementId"),
+            labels.get("combo", "logicalId_year"),
+        ]
+        sheet_rows = extract_sheet_rows(records, spec)
+        # Excel limita i nomi dei fogli a 31 caratteri
+        sheet_ws = wb.create_sheet(title=spec.get("name", f"{spec['tag']}{spec['subfield']}")[:31])
+        _fill_sheet(sheet_ws, sheet_headers, sheet_rows)
+        logging.info(f"Foglio '{sheet_ws.title}': {len(sheet_rows)} righe")
 
     wb.save(output_path)
 
@@ -332,6 +408,17 @@ def load_config(config_path: Path) -> list[dict]:
     if not columns:
         raise ValueError("Il file config.json non contiene nessuna colonna ('columns' vuoto o assente).")
     return columns
+
+
+def load_sheets(config_path: Path) -> list[dict]:
+    """Legge la chiave opzionale 'sheets'; restituisce [] se assente."""
+    with open(config_path, encoding="utf-8") as f:
+        data = json.load(f)
+    sheets = data.get("sheets", [])
+    for spec in sheets:
+        if "tag" not in spec or "subfield" not in spec:
+            raise ValueError("Ogni voce di 'sheets' deve avere 'tag' e 'subfield'.")
+    return sheets
 
 
 def main():
@@ -370,6 +457,7 @@ def main():
 
     try:
         columns = load_config(config_path)
+        sheets = load_sheets(config_path)
     except (json.JSONDecodeError, ValueError) as e:
         logging.error(f"Errore nel file di configurazione: {e}")
         sys.exit(1)
@@ -395,7 +483,7 @@ def main():
     # Scrittura Excel
     logging.info(f"Scrivo: {output_path}")
     try:
-        write_excel(records, columns, output_path)
+        write_excel(records, columns, output_path, sheets)
     except Exception as e:
         logging.error(f"Errore nella scrittura Excel: {e}")
         sys.exit(1)
