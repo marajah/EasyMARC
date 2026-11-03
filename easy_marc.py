@@ -276,7 +276,8 @@ def apply_column(record: dict, col_spec: dict) -> str:
 # ---------------------------------------------------------------------------
 
 _SPACES_RE = re.compile(r"\s+")
-DEFAULT_YEAR_REGEX = r"(\d{4})\s*$"
+DEFAULT_KEY_REGEX = r"(\d{4})\s*$"   # anno finale
+DEFAULT_KEY_ZFILL = 4
 
 
 def _passes_filter(field_value, flt) -> bool:
@@ -289,16 +290,20 @@ def _passes_filter(field_value, flt) -> bool:
 def extract_sheet_rows(records: list[dict], spec: dict) -> list[list[str]]:
     """
     Per ogni record e ogni occorrenza di tag$subfield produce una riga:
-      [id, valore (spazi compressi), id + combo_separator + anno]
-    L'anno è il gruppo 1 di 'year_regex' applicato al valore; se assente,
-    la cella combo resta vuota e viene registrato un warning.
+      [id, valore (spazi compressi), id + combo_separator + chiave]
+    La chiave è il gruppo 1 di 'key_regex' (alias storico 'year_regex',
+    default: anno finale) applicato al valore a spazi compressi; se numerica
+    viene completata con zeri a sinistra fino a 'key_zfill' cifre (default 4,
+    mai troncata). Se la chiave non si trova, la cella combo resta vuota e
+    viene registrato un warning.
     Con 'pad_to' il valore viene completato con spazi finali fino a quella
     lunghezza (mai troncato).
     """
     tag = spec["tag"]
     subfield = spec["subfield"]
     id_tag = spec.get("id_tag", "001")
-    year_re = re.compile(spec.get("year_regex", DEFAULT_YEAR_REGEX))
+    key_re = re.compile(spec.get("key_regex", spec.get("year_regex", DEFAULT_KEY_REGEX)))
+    key_zfill = spec.get("key_zfill", DEFAULT_KEY_ZFILL)
     combo_sep = spec.get("combo_separator", "_")
     flt = spec.get("filter")
     pad_to = spec.get("pad_to")
@@ -314,18 +319,21 @@ def extract_sheet_rows(records: list[dict], spec: dict) -> list[list[str]]:
                 value = _SPACES_RE.sub(" ", raw).strip()
                 if not value:
                     continue
-                m = year_re.search(value)
+                m = key_re.search(value)
+                if m:
+                    key = m.group(1)
+                    if key.isdigit():
+                        key = key.zfill(key_zfill)
+                    combo = f"{rec_id}{combo_sep}{key}"
+                else:
+                    combo = ""
+                    logging.warning(f"[{spec.get('name', tag)}] Chiave non trovata in {tag}${subfield} "
+                                    f"'{value}' (record {rec_id})")
                 if pad_to:
                     if len(value) > pad_to:
                         logging.warning(f"[{spec.get('name', tag)}] '{value}' supera {pad_to} caratteri "
                                         f"(record {rec_id}), lasciato intero")
                     value = value.ljust(pad_to)
-                if m:
-                    combo = f"{rec_id}{combo_sep}{m.group(1)}"
-                else:
-                    combo = ""
-                    logging.warning(f"[{spec.get('name', tag)}] Anno non trovato in {tag}${subfield} "
-                                    f"'{value}' (record {rec_id})")
                 rows.append([rec_id, value, combo])
     return rows
 
@@ -385,7 +393,7 @@ def write_excel(records: list[dict], columns: list[dict], output_path: Path, she
         sheet_headers = [
             labels.get("id", "logicalId"),
             labels.get("value", "managementId"),
-            labels.get("combo", "logicalId_year"),
+            labels.get("combo", "sheet_key"),
         ]
         sheet_rows = extract_sheet_rows(records, spec)
         # Excel limita i nomi dei fogli a 31 caratteri

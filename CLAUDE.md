@@ -91,20 +91,21 @@ Chiave top-level accanto a `columns`. Ogni voce crea un foglio con **una riga pe
 | `name` | `<tag><subfield>` | Nome del foglio (max 31 caratteri) |
 | `tag`, `subfield` | — (obbligatori) | Sottocampo da espandere |
 | `id_tag` | `"001"` | Campo di controllo usato come id del record |
-| `year_regex` | `(\\d{4})\\s*$` | Regex sul valore; il gruppo 1 è l'anno |
-| `combo_separator` | `"_"` | Separatore tra id e anno |
+| `key_regex` | `(\\d{4})\\s*$` (anno finale) | Regex sul valore a spazi compressi; il gruppo 1 è la chiave. Alias storico: `year_regex`. Es. `^\\S+ (\\d+)` = inventario |
+| `key_zfill` | `4` | Se la chiave è numerica, zeri a sinistra fino a N cifre (mai troncata): `34` → `0034` |
+| `combo_separator` | `"_"` | Separatore tra id e chiave |
 | `pad_to` | — | Completa il valore con spazi finali fino a N caratteri (mai troncato; warning se più lungo) |
 | `filter` | — | Come nelle colonne: `{"subfield": "3", "value": "..."}` |
-| `labels` | `logicalId` / `managementId` / `logicalId_year` | Intestazioni (`id`, `value`, `combo`) |
+| `labels` | `logicalId` / `managementId` / `sheet_key` | Intestazioni (`id`, `value`, `combo`) |
 
-Colonne: id del record, valore con spazi compressi (`SV 33 5 1927`), `id_anno` (`CFI0350986_1927`). Se l'anno non si trova, la cella combo resta vuota e viene loggato un warning.
+Colonne: id del record, valore con spazi compressi (`SV 33 5 1927`), `id_chiave` (`CFI0350986_0034` con key_regex inventario, `CFI0350986_1928` col default anno). Se la chiave non si trova, la cella combo resta vuota e viene loggato un warning.
 
 ## File di configurazione presenti
 
 | File | Cliente / Uso |
 |------|--------------|
 | `config-EasyCat-Chieti-periodici.json` | EasyCat, Chieti — periodici. Usa tag `957` con `filter` per biblioteca `ABR0ME`, `conservativeId = IT-CH0020` |
-| `config-SBNcloud-Savona-Letimbro.json` | SBNcloud, Savona — Biblioteca Barrili (periodici). Copia della config Imperia + foglio `managementId` da `950$e` |
+| `config-SBNcloud-Savona-Letimbro.json` | SBNcloud, Savona — Biblioteca Barrili (periodici). Copia della config Imperia + foglio `managementId` da `950$e` (valore a 15 caratteri, chiave `logicalId_inventario` a 4 cifre) |
 | `config-SBNcloud-Foligno-Loreti.json` | SBNcloud, Foligno — biblioteca Loreti. Usa tag `950` per collocazioni, `conservativeId = IT-PG0035`, `join` su sottocampi `$e` e `$a` del 200 |
 
 ## Cronologia modifiche rilevanti

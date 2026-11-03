@@ -195,13 +195,14 @@
       "tag": "950",
       "subfield": "e",
       "id_tag": "001",
-      "year_regex": "(\\d{4})\\s*$",
+      "key_regex": "^\\S+ (\\d+)",
+      "key_zfill": 4,
       "combo_separator": "_",
       "pad_to": 15,
       "labels": {
         "id": "logicalId",
         "value": "managementId",
-        "combo": "logicalId_year"
+        "combo": "sheet_key"
       }
     }
   ]
